@@ -1,0 +1,1 @@
+An inventory manager powered with react, electron, and a postgresql database.
