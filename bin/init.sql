@@ -98,3 +98,5 @@ CREATE TABLE order_shipment (
     shipping_company varchar(30),
     FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
 );
+
+CREATE SEQUENCE seqId START 1;
