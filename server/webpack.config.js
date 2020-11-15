@@ -2,13 +2,13 @@ const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 module.exports = {
-  entry: {
-    server: './index.js',
-  },
+  entry: [
+    '@babel/polyfill', './index.js'
+  ],
   output: {
     path: path.join(__dirname, 'dist'),
     publicPath: '/',
-    filename: '[name].js'
+    filename: 'server.js'
   },
   target: 'node',
   node: {

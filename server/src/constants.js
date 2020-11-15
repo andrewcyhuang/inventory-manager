@@ -8,8 +8,5 @@ export default class Constants {
     static getPrefix = "/get";
     static deletePrefix = "/delete";
     static rolePrefix = "/role";
-    static roleCreatePrefix = Constants.rolePrefix + Constants.createPrefix;
-    static roleUpdatePrefix = Constants.rolePrefix + Constants.updatePrefix;
-    static roleGetPrefix = Constants.rolePrefix + Constants.getPrefix;
-    static roleDeletePrefix = Constants.rolePrefix + Constants.deletePrefix;
+    static productPrefix = "/product";
 }
