@@ -33,7 +33,7 @@ Open up a terminal instance and run the following commands in order
     This connects us to pg with the new role we just created!
     Notice that the command prompt now shows postgres=> instead of postgres=#, this tells us that we are no longer logged in as a superuser.
 
-9. Now you can run the commands Server/init.sql in the command line prompt to init the db and table for our project
+9. Navigate into /server and run: npm run db:init
 
 10. if you ever want to terminate postgres, you can run:
     brew services stop postgresql
