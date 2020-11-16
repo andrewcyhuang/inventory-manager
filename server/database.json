@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "driver": "pg",
+        "user": "me",
+        "password": "password1",
+        "host": "localhost",
+        "database": "inventorymanager",
+        "port": "5432"
+      }
+}

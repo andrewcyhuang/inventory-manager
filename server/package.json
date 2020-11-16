@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf dist && webpack --mode development",
-    "start": "npm run build &&node ./dist/server.js"
+    "start": "npm run build &&node ./dist/server.js",
+    "db:init": "node ./initDb.js && npm run db:up",
+    "db:up": "db-migrate up",
+    "db:down": "db-migrate down"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +29,8 @@
     "@babel/polyfill": "^7.12.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "db-migrate": "^0.11.11",
+    "db-migrate-pg": "^1.2.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "helmet": "^4.2.0",
