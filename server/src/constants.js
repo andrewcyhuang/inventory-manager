@@ -7,6 +7,8 @@ export default class Constants {
     static updatePrefix = "/update";
     static getPrefix = "/get";
     static deletePrefix = "/delete";
+    static initPrefix = "/init";
+    static dummyPrefix = "/dummy";
     static rolePrefix = "/role";
     static productPrefix = "/product";
 }
