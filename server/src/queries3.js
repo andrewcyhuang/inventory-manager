@@ -1,5 +1,3 @@
-import { productType } from './enums';
-import * as Dummy from './dummyData';
 
 // Operations on Employee Table
 //As we already claimed that id to by Pk, sin to be unique, and rold_id to be not null
@@ -14,9 +12,7 @@ export const createEmployee = async (poolClient, employee) => {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO employee (id, sin, first_name, last_name, email, phone_number, role_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (id, sin)
-            DO NOTHING`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [parseInt(id), parseInt(employee.sin), employee.first_name, employee.last_name, employee.email,employee.phone_number,employee.role_id]);
 
         await poolClient.query('COMMIT');
@@ -81,9 +77,7 @@ export const createRole = async (poolClient, role) => {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO role (id, name, permission_id)) 
-            VALUES ($1,$2,$3)
-            ON CONFLICT (id, permission_id)
-            DO NOTHING`, 
+            VALUES ($1,$2,$3)`, 
             [parseInt(id), name, parseInt(role.permission_id)]);
         
         await poolClient.query('COMMIT');
@@ -148,9 +142,7 @@ export const createPermission = async (poolClient, permission) => {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO permission (id, type)) 
-            VALUES ($1,$2)
-            ON CONFLICT (id)
-            DO NOTHING`, 
+            VALUES ($1,$2)`, 
             [parseInt(id), permission.type]);
         
         await poolClient.query('COMMIT');
