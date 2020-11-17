@@ -227,15 +227,17 @@ export const deductItemsFromInventory = async (poolClient, inventoryId, sku, qua
     }
 };
 
-// Pass only poolClient and inventoryId to get all products at a location, otherwise, pass a specific sku to get a specific product at the location
-export const getInventoryProducts = async (poolClient, inventoryId, sku = null) => {
-    let queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1`;
-    const values = [parseInt(inventoryId)];
+export const getInventoryContainsProduct = async (poolClient) => {
+    let queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id) ASC`;
 
-    if (sku) {
-        queryString = queryString.concat(` AND sku = $2`);
-        values.push(sku);
-    }
+    let result = await poolClient.query(queryString);
+
+    return result.rows;
+};
+// Pass only poolClient and inventoryId to get all products at a location
+export const getInventoryProducts = async (poolClient, inventoryId) => {
+    let queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1 ORDER BY (inventory_id) ASC`;
+    const values = [parseInt(inventoryId)];
 
     let result = await poolClient.query(queryString, values);
 
@@ -256,7 +258,6 @@ export const initProductDummyData = async (poolClient) => {
         let len = Dummy.dummyProductData.length;
         for (let i = 0; i < len; i++) {
             const jsonProduct = JSON.parse(JSON.stringify(Dummy.dummyProductData[i]));
-            console.log(jsonProduct);
             productSkus.push(jsonProduct.sku);
             await createProduct(poolClient, jsonProduct);
         };
@@ -268,7 +269,6 @@ export const initProductDummyData = async (poolClient) => {
             len = Dummy.dummyInventoryData.length;
             for (let i = 0; i < len; i++) {
                 const jsonInventory = JSON.parse(JSON.stringify(Dummy.dummyInventoryData[i]));
-                console.log(jsonInventory);
                 await createInventory(poolClient, jsonInventory);
             };
             inventories = await getInventory(poolClient);

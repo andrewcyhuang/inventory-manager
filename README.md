@@ -22,7 +22,7 @@ ALTER ROLE me CREATEDB;
 Run the following commands in two individual terminal instances:
 
 ```sh
-cd server && npm install && npm db:init && npm run start
+cd server && npm install && npm run db:init && npm run start
 ```
 
 ```sh
