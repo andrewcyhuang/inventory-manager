@@ -74,7 +74,7 @@ CREATE TABLE orders (
     inventory_id integer,
     type order_type NOT NULL,
     employee_id integer NOT NULL,
-    datetime timestamp,
+    datetime timestamp DEFAULT NOW(),
     customer_name varchar(30),
     customer_email varchar(30),
     customer_payment_type varchar(30),
@@ -87,7 +87,8 @@ CREATE TABLE orders (
 CREATE TABLE order_has_product ( 
     order_id integer,
     sku varchar(10),
-    quantity integer NOT NULL DEFAULT 0, PRIMARY KEY (order_id, sku),
+    quantity integer NOT NULL DEFAULT 0,
+    PRIMARY KEY (order_id, sku),
     FOREIGN KEY (order_id) REFERENCES orders (id),
     FOREIGN KEY (sku) REFERENCES product (sku) 
 );

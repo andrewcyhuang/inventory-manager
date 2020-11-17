@@ -33,7 +33,7 @@ const corsConfig = {
 }
 
 app.use(helmet());
-// app.use(cors(corsConfig));
+app.use(cors(corsConfig));
 app.use(bodyParser.json());
 app.use(
     bodyParser.urlencoded({
@@ -61,7 +61,7 @@ app.post(Constants.apiPrefix + Constants.dummyPrefix + Constants.initPrefix, asy
     }
 });
 
-app.post(Constants.apiPrefix + Constants.productPrefix + Constants.createPrefix, async (req, res) => {
+app.post(Constants.apiPrefix + Constants.productPrefix, async (req, res) => {
     const poolClient = await pool.connect();
     try {
         const { productConfig } = req.body;
@@ -84,19 +84,13 @@ app.post(Constants.apiPrefix + Constants.productPrefix + Constants.createPrefix,
     }
 });
 
-app.post(Constants.apiPrefix + Constants.productPrefix + Constants.updatePrefix, async (req, res) => {
+app.get(Constants.apiPrefix + Constants.productPrefix, async (req, res) => {
     const poolClient = await pool.connect();
+
     try {
-        const { productConfig } = req.body;
-
-        if (productConfig) {
-            await Queries.updateProduct(poolClient, productConfig);
-        } else {
-            throw new Error(`Missing input body: productConfig`);
-        }
-
+        const result = await Queries.getProducts(poolClient);
         res.status(StatusCodes.OK)
-            .send(`Your new product info has been updated!`);
+            .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(`Your new product info failed to be updated. ${e}`);
@@ -107,6 +101,39 @@ app.post(Constants.apiPrefix + Constants.productPrefix + Constants.updatePrefix,
     }
 });
 
+app.get(Constants.apiPrefix + Constants.inventoryPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getInventory(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getInventoryContainsProduct(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
 
 
 app.listen(process.env.PORT || Constants.portServer, () => {

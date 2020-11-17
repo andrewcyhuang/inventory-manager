@@ -227,15 +227,17 @@ export const deductItemsFromInventory = async (poolClient, inventoryId, sku, qua
     }
 };
 
-// Pass only poolClient and inventoryId to get all products at a location, otherwise, pass a specific sku to get a specific product at the location
-export const getInventoryProducts = async (poolClient, inventoryId, sku = null) => {
-    let queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1`;
-    const values = [parseInt(inventoryId)];
+export const getInventoryContainsProduct = async (poolClient) => {
+    let queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id) ASC`;
 
-    if (sku) {
-        queryString = queryString.concat(` AND sku = $2`);
-        values.push(sku);
-    }
+    let result = await poolClient.query(queryString);
+
+    return result.rows;
+};
+// Pass only poolClient and inventoryId to get all products at a location
+export const getInventoryProducts = async (poolClient, inventoryId) => {
+    let queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1 ORDER BY (inventory_id) ASC`;
+    const values = [parseInt(inventoryId)];
 
     let result = await poolClient.query(queryString, values);
 
@@ -256,7 +258,6 @@ export const initProductDummyData = async (poolClient) => {
         let len = Dummy.dummyProductData.length;
         for (let i = 0; i < len; i++) {
             const jsonProduct = JSON.parse(JSON.stringify(Dummy.dummyProductData[i]));
-            console.log(jsonProduct);
             productSkus.push(jsonProduct.sku);
             await createProduct(poolClient, jsonProduct);
         };
@@ -268,7 +269,6 @@ export const initProductDummyData = async (poolClient) => {
             len = Dummy.dummyInventoryData.length;
             for (let i = 0; i < len; i++) {
                 const jsonInventory = JSON.parse(JSON.stringify(Dummy.dummyInventoryData[i]));
-                console.log(jsonInventory);
                 await createInventory(poolClient, jsonInventory);
             };
             inventories = await getInventory(poolClient);
@@ -313,6 +313,146 @@ const initLocation = async (poolClient, inventory) => {
     }
 };
 
+// Operations on Orders Table
+export const createOrder = async (poolClient, order) => {
+    const id = await getNextId(poolClient);
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO orders (id, inventory_id, type, employee_id, customer_name, customer_email, customer_payment_type, customer_address, reason)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (id)
+            DO NOTHING`,
+            [id, order.inventory_id, order.type, order.employee_id, order.customer_name, order.customer_email, order.customer_payment_type, order.customer_address, order.reason]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const populateOrder = async (poolClient, orderId, product) => {
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO order_has_product (order_id, sku, quantity)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (order_id, sku)
+            DO NOTHING`,
+            [orderId, product.sku, product.sku]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const updateOrder = async (poolClient, order) => {
+    const {id, ...updateFields} = order;
+
+    try {
+        await poolClient.query('BEGIN');
+        let values = [];
+        let count = 0;
+        let updateColumns = Object.keys(updateFields).map(fieldKey => {
+            values.push(order[fieldKey]);
+            count++;
+            return `${fieldKey} = ($${count})`;
+        }).join(',');
+
+        count++;
+        values.push(id);
+        let queryString =  `UPDATE orders SET ${updateColumns} WHERE id = $${count}`;
+        await poolClient.query(queryString, values);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+};
+
+export const cancelOrder = async (poolClient, orderId) => {
+    const queryString = "DELETE FROM orders WHERE id = $1";
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, [parseInt(orderId)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const getOrderInfo = async (poolClient, orderId) => {
+    let queryString = `SELECT * FROM orders o, order_has_product op, order_shipment os
+                        WHERE o.id = $1 AND o.id = op.order_id AND o.id = os.order_id`;
+    const values = [parseInt(orderId)];
+
+    let result = await poolClient.query(queryString, values);
+
+    return result.rows;
+};
+
+export const createOrderShipment = async (poolClient, orderId, shipmentCompany) => {
+    const id = await getNextId(poolClient);
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO order_shipment (tracking_number, order_id, shipping_company)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (tracking_number)
+            DO NOTHING`,
+            [id, orderId, shipmentCompany]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const cancelShipment = async (poolClient, trackingNumber) => {
+    const queryString = "DELETE FROM order_shipment WHERE tracking_number = $1";
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, [parseInt(trackingNumber)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const getShipmentInfo = async (poolClient, trackingNumber) => {
+    const queryString = "SELECT * FROM order_shipment WHERE tracking_number = $1";
+    let res = await poolClient.query(queryString, [parseInt(trackingNumber)]);
+    return res.rows;
+}
+
+export const getMostCommonOrderType = async (poolClient) => {
+    const queryString = `SELECT type FROM orders GROUP BY type
+        HAVING count(id) = (SELECT MAX(numOrdersPerType)
+                            FROM (SELECT count(o1.id) as numOrdersPerType
+                                  FROM orders o1
+                                  GROUP BY o1.id) as o1nOPT
+        )`
+
+    let res = await poolClient.query(queryString);
+    return res.rows;
+}
+
+// Helpers
 const getNextId = async (poolClient) => {
     const result = await poolClient.query(`SELECT NEXTVAL('seqId')`);
 
