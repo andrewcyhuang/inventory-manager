@@ -9,4 +9,7 @@ export default class Constants {
     static productPrefix = "/product";
     static inventoryPrefix = "/inventory";
     static inventoryContainsProductsPrefix = "/inventoryContainsProduct";
+    static physicalPrefix = '/physical';
+    static digitalPrefix = '/digital';
+    static rangePrefix = '/range';
 }
