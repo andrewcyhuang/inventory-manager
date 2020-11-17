@@ -217,7 +217,7 @@ app.get(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix + `/:sku
 app.post(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async (req, res) => {
     const poolClient = await pool.connect();
     try {
-        await Queries.updateQuantityFromInventory(poolClient, req.body);
+        await Queries.insertProductIntoInventory(poolClient, req.body);
         res.status(StatusCodes.OK);
     } catch (e) {
         console.log(`${e}`);
