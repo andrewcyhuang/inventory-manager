@@ -1,14 +1,14 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import GenericTable from './GenericTable';
-import { getAllProducts, getAllInventories, getAllInventoryHasProducts } from '../common/queries';
+import Constants from '../common/constants';
+import AbstractTableWrapper from './AbstractTableWrapper';
 
 function MainView() {
     return (
         <Container>
-            <GenericTable entityName='Inventory Contains Product' getData={getAllInventoryHasProducts}/>
-            <GenericTable entityName='Inventory' getData={getAllInventories}/>
-            <GenericTable entityName='Product' getData={getAllProducts}/>
+            <AbstractTableWrapper entityName='Inventory Contains Product' endpoint={Constants.inventoryContainsProductsPrefix} />
+            <AbstractTableWrapper entityName='Inventory' endpoint={Constants.inventoryPrefix}/>
+            <AbstractTableWrapper entityName='Product' endpoint={Constants.productPrefix}/>
         </Container>
     )
 }

@@ -56,7 +56,6 @@ export const updateInventory = async (poolClient, inventory) => {
     }
 }
 
-// Pass only poolClient to getAll, otherwise, pass a specific id to get a specific inventory
 export const getInventory = async (poolClient, inventoryId = null) => {
     let queryString = `SELECT * FROM inventory`;
     let values = [];
@@ -71,9 +70,6 @@ export const getInventory = async (poolClient, inventoryId = null) => {
     return result.rows;
 }
 
-// Operations on Product Table
-/* Product object = {sku: string, name: string, price: number, type: enum, weight?: number, 
-    width?: number, length?: number, height?: number, url?: string} */
 export const createProduct = async (poolClient, product) => {
     let columns = ['sku', 'name', 'price', 'type'];
     let values = [product.sku, product.name, parseInt(product.price), product.type];
