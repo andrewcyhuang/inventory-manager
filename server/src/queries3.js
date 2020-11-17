@@ -1,9 +1,5 @@
 
 // Operations on Employee Table
-//As we already claimed that id to by Pk, sin to be unique, and rold_id to be not null
-//Do we still need to use conflit here?
-//emial, role_id should be unique as well?
-//Can we share getNextId function?
 
 export const createEmployee = async (poolClient, employee) => {
     const id = await getNextId(poolClient);
@@ -13,7 +9,7 @@ export const createEmployee = async (poolClient, employee) => {
 
         await poolClient.query(`INSERT INTO employee (id, sin, first_name, last_name, email, phone_number, role_id)
             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [parseInt(id), parseInt(employee.sin), employee.first_name, employee.last_name, employee.email,employee.phone_number,employee.role_id]);
+            [parseInt(id), employee.sin, employee.first_name, employee.last_name, employee.email,employee.phone_number,employee.role_id]);
 
         await poolClient.query('COMMIT');
     } catch (e) {
@@ -39,7 +35,7 @@ export const deleteEmployee = async (poolClient, employeeID) => {
 
 export const updateEmployee = async (poolClient, employee) => {
 
-    const queryString = `UPDATE employee SET sin=$1, first_name=$2, last_name=$3, email=$4, phone_number=$5, role_id=$6`;
+    const queryString = `UPDATE employee SET sin=$2, first_name=$3, last_name=$4, email=$5, phone_number=$6, role_id=$7 where id = $1`;
     const values = [employee.id, parseInt(employee.sin), employee.first_name, employee.last_name, employee.email, employee.phone_number, employee.role_id];
 
     try {
@@ -61,7 +57,7 @@ export const getEmployee = async (poolClient, employeeID = null) => {
 
     if (employeeID) {
         queryString =  `SELECT * FROM employee WHERE id = $1`;
-        values = parseInt(employeeID);
+        values.push(parseInt(employeeID));
     }
 
     const result = await poolClient.query(queryString, values);
@@ -104,7 +100,7 @@ export const deleteRole = async (poolClient, roleID) => {
 
 export const updateRole = async (poolClient, role) => {
 
-    const queryString = `UPDATE role SET name=$1, permission_id=$2`;
+    const queryString = `UPDATE role SET name=$2, permission_id=$3 WHERE id = $1`;
     const values = [parseInt(role.id), name, parseInt(role.permission_id)];
 
     try {
@@ -126,7 +122,7 @@ export const getRole = async (poolClient, roleID = null) => {
 
     if (roleID) {
         queryString =  `SELECT * FROM role WHERE id = $1`;
-        values = parseInt(roleID);
+        values.push(parseInt(roleID));
     }
 
     const result = await poolClient.query(queryString, values);
@@ -175,7 +171,7 @@ export const getPermission = async (poolClient, permissionID = null) => {
 
     if (permissionID) {
         queryString =  `SELECT * FROM permission WHERE id = $1`;
-        values = parseInt(permissionID);
+        values.push(parseInt(permissionID));
     }
 
     const result = await poolClient.query(queryString, values);
