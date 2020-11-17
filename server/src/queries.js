@@ -1,4 +1,4 @@
-import { productType } from './enums';
+import { productType, orderType } from './enums';
 import * as Dummy from './dummyData';
 
 // Operations on Inventory Table
@@ -294,9 +294,7 @@ export const createOrder = async (poolClient, order) => {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO orders (id, inventory_id, type, employee_id, customer_name, customer_email, customer_payment_type, customer_address, reason)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            ON CONFLICT (id)
-            DO NOTHING`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
             [id, order.inventory_id, order.type, order.employee_id, order.customer_name, order.customer_email, order.customer_payment_type, order.customer_address, order.reason]);
 
         await poolClient.query('COMMIT');
@@ -311,9 +309,7 @@ export const populateOrder = async (poolClient, orderId, product) => {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO order_has_product (order_id, sku, quantity)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (order_id, sku)
-            DO NOTHING`,
+            VALUES ($1, $2, $3)`,
             [orderId, product.sku, product.sku]);
 
         await poolClient.query('COMMIT');
@@ -380,9 +376,7 @@ export const createOrderShipment = async (poolClient, orderId, shipmentCompany) 
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO order_shipment (tracking_number, order_id, shipping_company)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (tracking_number)
-            DO NOTHING`,
+            VALUES ($1, $2, $3)`,
             [id, orderId, shipmentCompany]);
 
         await poolClient.query('COMMIT');
@@ -413,15 +407,27 @@ export const getShipmentInfo = async (poolClient, trackingNumber) => {
     return res.rows;
 }
 
-export const getMostCommonOrderType = async (poolClient) => {
-    const queryString = `SELECT type FROM orders GROUP BY type
-        HAVING count(id) = (SELECT MAX(numOrdersPerType)
-                            FROM (SELECT count(o1.id) as numOrdersPerType
-                                  FROM orders o1
-                                  GROUP BY o1.id) as o1nOPT
-        )`
+export const getPurchaseOrderCount = async (poolClient) => {
+    let queryString = `SELECT count(*) FROM orders
+                        GROUP BY type
+                        HAVING type = $1`;
+    let res = await poolClient.query(queryString, [orderType.PURCHASE]);
+    return res.rows;
+}
 
-    let res = await poolClient.query(queryString);
+export const getRestockOrderCount = async (poolClient) => {
+    let queryString = `SELECT count(*) FROM orders
+                        GROUP BY type
+                        HAVING type = $1`;
+    let res = await poolClient.query(queryString, [orderType.RESTOCK]);
+    return res.rows;
+}
+
+export const getReturnOrderCount = async (poolClient) => {
+    let queryString = `SELECT count(*) FROM orders
+                        GROUP BY type
+                        HAVING type = $1`;
+    let res = await poolClient.query(queryString, [orderType.RETURN]);
     return res.rows;
 }
 

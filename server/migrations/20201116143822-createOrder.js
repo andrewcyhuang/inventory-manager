@@ -22,7 +22,7 @@ exports.up = function(db) {
       inventory_id integer,
       type order_type NOT NULL,
       employee_id integer NOT NULL,
-      datetime timestamp,
+      datetime timestamp DEFAULT NOW(),
       customer_name varchar(30),
       customer_email varchar(30),
       customer_payment_type varchar(30),
