@@ -49,9 +49,10 @@ CREATE TABLE employee (
 );
 
 CREATE TABLE role (
-    id integer PRIMARY KEY,
+    id integer,
     name varchar(50) NOT NULL,
     permission_id integer NOT NULL,
+    PRIMARY KEY(id, permission_id),
     FOREIGN KEY (permission_id) REFERENCES permission(id) ON DELETE CASCADE
 );
 
@@ -101,3 +102,4 @@ CREATE TABLE order_shipment (
 );
 
 CREATE SEQUENCE seqId START 1;
+

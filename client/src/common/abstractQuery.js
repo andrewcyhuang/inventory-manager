@@ -5,8 +5,12 @@ class AbstractQuery {
         this.endpoint = assetEndpoint;
     }
 
-    async getAll() {
-        return await axios.get(this.endpoint);
+    async getAll(prefix = '') {
+        let endpoint = this.endpoint;
+        if (prefix) {
+            endpoint += prefix;
+        }
+        return await axios.get(endpoint);
     }
 
     async getById(id) {
@@ -18,6 +22,7 @@ class AbstractQuery {
     }
 
     async put(id, body) {
+        console.log(`sending request ${body}`);
         return await axios.put(`${this.endpoint}/${id}`, body);
     }
 

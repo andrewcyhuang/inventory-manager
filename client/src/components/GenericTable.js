@@ -1,17 +1,16 @@
+import React from 'react';
 import { Table, Row } from 'react-bootstrap';
 import { renderTableHeaders, renderTableData } from '../common/utils';
 
-function GenericTable(props) {
+export const GenericTable = props => {
     return (
-        <div>
+        <React.Fragment>
             <Row>
                 <Table striped bordered hover size='sm' style={{fontFamily: 'Helvetica'}}>
                     <thead style={{fontSize: '14px'}}>{renderTableHeaders(props.data)}</thead>
                     <tbody style={{fontSize: '12px'}}>{renderTableData(props.data)}</tbody>
                 </Table>
             </Row>
-        </div>
+        </React.Fragment>
     );
-}
-
-export default GenericTable;
+};

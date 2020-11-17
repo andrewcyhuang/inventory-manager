@@ -16,9 +16,10 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.runSql(`CREATE TABLE IF NOT EXISTS role (
-    id integer PRIMARY KEY,
+    id integer,
     name varchar(50) NOT NULL,
     permission_id integer NOT NULL,
+    PRIMARY KEY (id, permission_id),
     FOREIGN KEY (permission_id) REFERENCES permission(id) ON DELETE CASCADE
     );`
   );
