@@ -88,7 +88,7 @@ CREATE TABLE orders (
 CREATE TABLE order_has_product ( 
     order_id integer,
     sku varchar(10),
-    quantity integer NOT NULL DEFAULT 0,
+    quantity integer NOT NULL DEFAULT 1,
     PRIMARY KEY (order_id, sku),
     FOREIGN KEY (order_id) REFERENCES orders (id),
     FOREIGN KEY (sku) REFERENCES product (sku) 
