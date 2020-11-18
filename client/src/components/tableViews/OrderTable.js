@@ -45,18 +45,8 @@ class OrderTable extends React.Component {
                 <br/>
                 <Card>
                     <div style={{ width: '80%', margin: '0 auto', paddingTop: '5px', paddingBottom: '10px'}}>
-                        <Card.Title>Submit or delete an order</Card.Title>
+                        <Card.Title>Submit an order</Card.Title>
                         <Row>
-                            <Col>
-                                <Form.Group controlId='id'>
-                                    <small className="form-text text-muted">Enter a valid numeric order id.</small>
-                                    <Form.Control
-                                        name='id'
-                                        value={this.state.form.id}
-                                        placeholder='Insert a numeric order id'
-                                        onChange={this.handleInputChange.bind(this)}/>
-                                </Form.Group>
-                            </Col>
                             <Col>
                                 <Form.Group controlId='inventory_id'>
                                     <small className="form-text text-muted">Enter a valid inventory id.</small>
@@ -169,14 +159,6 @@ class OrderTable extends React.Component {
                                 </Form>
                             </Col>
                             <Col>
-                                <Form onSubmit={this.handleDeleteOrder.bind(this)}>
-                                    <Button variant='primary' type='submit'>
-                                        Delete an order
-                                    </Button>
-                                    <small className="form-text text-muted">Only requires id input.</small>
-                                </Form>
-                            </Col>
-                            <Col>
                                 <Form onSubmit={this.updateData.bind(this)}>
                                     <Button variant='primary' type='submit'>
                                         Refresh Table
@@ -184,6 +166,29 @@ class OrderTable extends React.Component {
                                 </Form>
                             </Col>
                         </Row>
+                    </div>
+                </Card>
+                <br/>
+                <Card>
+                    <div style={{ width: '80%', margin: '0 auto', paddingTop: '5px', paddingBottom: '10px'}}>
+                        <Card.Title>Delete an order</Card.Title>
+                        <Col>
+                            <Form.Group controlId='id'>
+                                <small className="form-text text-muted">Enter a valid numeric order id.</small>
+                                <Form.Control
+                                    name='id'
+                                    value={this.state.form.id}
+                                    placeholder='Insert a numeric order id'
+                                    onChange={this.handleInputChange.bind(this)}/>
+                            </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form onSubmit={this.handleDeleteOrder.bind(this)}>
+                                <Button variant='primary' type='submit'>
+                                    Delete order
+                                </Button>
+                            </Form>
+                        </Col>
                     </div>
                 </Card>
                 <br/>
