@@ -1,15 +1,15 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import InventoryContainsProductTableWrapper from './tableWrappers/InventoryContainsProductTableWrapper';
-import ProductTableWrapper from './tableWrappers/ProductTableWrapper';
+import InventoryContainsProductTableWrapper from './tableWrappers/InventoryContainsProductTable';
+import ProductTableWrapper from './tableWrappers/ProductTable';
 
-function MainView() {
+const MainView = () => {
     return (
         <Container>
             <InventoryContainsProductTableWrapper />
             <ProductTableWrapper />
         </Container>
-    )
-}
+    );
+};
 
 export default MainView;

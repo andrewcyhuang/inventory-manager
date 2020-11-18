@@ -4,15 +4,15 @@ import AbstractQuery from '../../common/abstractQuery';
 import { Form, Row, Button, Col } from 'react-bootstrap';
 import Constants from '../../common/constants';
 
-class InventoryContainsProductTableWrapper extends React.Component {
+class OrderTable extends React.Component {
     constructor (props) {
         super(props);
-        this.state = { data: [], form:{ id: 0, sku: '', quantity: 0} };
+        this.state = { data: [], form:{ id: 0 } };
         this.queryHelper = null;
     }
 
     async componentDidMount() {
-        this.queryHelper = new AbstractQuery(Constants.inventoryContainsProductsPrefix);
+        this.queryHelper = new AbstractQuery(Constants.orderPrefix);
         await this.updateData();
     }
 
@@ -21,10 +21,10 @@ class InventoryContainsProductTableWrapper extends React.Component {
             <div>
                 <Row>
                 <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
-                    <h2>Inventory Contains Product Table </h2>
+                    <h2>Order Table </h2>
                 </div>
                 </Row>
-                <Row>
+                {/* <Row>
                     <Col>
                         <Form.Group controlId='id'>
                             <small className="form-text text-muted">Enter a valid numeric inventory id.</small>
@@ -67,7 +67,7 @@ class InventoryContainsProductTableWrapper extends React.Component {
                         </Form>
                     </Col>
                     <Col>
-                        <Form onSubmit={this.handleGetProductLocations.bind(this)}>
+                        <Form onSubmit={this.handleGetOrderInfo.bind(this)}>
                             <Button variant='primary' type='submit'>
                             Get Inventories that stock this product.
                             </Button>
@@ -82,7 +82,7 @@ class InventoryContainsProductTableWrapper extends React.Component {
                             <small className="form-text text-muted">Requires no inputs.</small>
                         </Form>
                     </Col>
-                </Row>
+                </Row> */}
             <br/>
             <GenericTable data={this.state.data}/>
             </div>
@@ -123,15 +123,13 @@ class InventoryContainsProductTableWrapper extends React.Component {
         }
     }
 
-    async handleGetProductLocations(event) {
+    async handleGetOrderInfo(event) {
         event.preventDefault();
-        const sku = this.state.form.sku;
-        if (sku) {
+        const { id } = this.state.form;
+        if (id) {
             try {
-                const res = await this.queryHelper.getById(sku);
-                console.log(`${res.data}`);
+                const res = await this.queryHelper.getById(id);
                 if (res && res.data) {
-                    console.log(JSON.stringify(res.data));
                     this.setState({data: res.data});
                 }
             } catch (e) {
@@ -139,7 +137,6 @@ class InventoryContainsProductTableWrapper extends React.Component {
                 this.resetFormFields();
             }
         } else {
-            console.log(`else`);
             this.resetFormFields();
         }
     }
@@ -149,4 +146,4 @@ class InventoryContainsProductTableWrapper extends React.Component {
     };
 }
 
-export default InventoryContainsProductTableWrapper;
+export default OrderTable;

@@ -1,8 +1,8 @@
-export class Aggregation {
-    'MAX';
-    'MIN';
-    'AVG';
-    'COUNT';
+export const AggregationTypes = {
+    'MAX': 'MAX',
+    'MIN': 'MIN',
+    'AVG': 'AVG',
+    'COUNT': 'COUNT',
 }
 
 export const ProductTypes = {
