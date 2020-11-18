@@ -8,7 +8,7 @@
     "start": "npm run build &&node ./dist/server.js",
     "db:init": "node ./initDb.js && npm run db:up",
     "db:up": "db-migrate up",
-    "db:down": "db-migrate down"
+    "db:down": "db-migrate reset"
   },
   "keywords": [],
   "author": "",

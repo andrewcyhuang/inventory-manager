@@ -35,7 +35,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.runSql(`DROP TABLE IF EXISTS order CASCADE; DROP TYPE order_type CASCADE;`);
+  return db.runSql(`DROP TABLE IF EXISTS orders CASCADE; DROP TYPE order_type CASCADE;`);
 };
 
 exports._meta = {
