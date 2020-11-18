@@ -1,4 +1,4 @@
-import { productType, orderType } from './enums';
+import { ProductTypes, orderType } from './enums';
 import * as Dummy from './dummyData';
 
 // Operations on Inventory Table
@@ -56,7 +56,7 @@ export const updateInventory = async (poolClient, inventory) => {
 
 export const getInventory = async (poolClient, inventoryId = null) => {
     let queryString = `SELECT * FROM inventory`;
-    let values = [];
+    const values = [];
 
     if (inventoryId) {
         queryString =  `SELECT * FROM inventory WHERE id = $1`;
@@ -71,7 +71,7 @@ export const getInventory = async (poolClient, inventoryId = null) => {
 export const createProduct = async (poolClient, product) => {
     let columns = ['sku', 'name', 'price', 'type'];
     let values = [product.sku, product.name, parseInt(product.price), product.type];
-    if (product.type == productType.PHYSICAL) {
+    if (product.type == ProductTypes.PHYSICAL) {
         columns = [...columns, 'weight', 'width', 'length', 'height'];
         values = [...values, parseFloat(product.weight), parseFloat(product.width), parseFloat(product.length), parseFloat(product.height)];
     } else {
@@ -115,9 +115,9 @@ export const updateProduct = async (poolClient, product) => {
 
     try {
         await poolClient.query('BEGIN');
-        let values = [];
+        const values = [];
         let count = 0;
-        let updateColumns = Object.keys(updateFields).map(fieldKey => {
+        const updateColumns = Object.keys(updateFields).map(fieldKey => {
             values.push(product[fieldKey]);
             count++;
             return `${fieldKey} = ($${count})`;
@@ -144,14 +144,14 @@ export const getProducts = async (poolClient) => {
 
 export const getDigitalProducts = async (poolClient) => {
     const queryString = `SELECT sku, name, price, type, url FROM product WHERE type = $1`;
-    const result = await poolClient.query(queryString, [productType.DIGITAL]);
+    const result = await poolClient.query(queryString, [ProductTypes.DIGITAL]);
 
     return result.rows;
 }
 
 export const getPhysicalProducts = async (poolClient) => {
     const queryString = `SELECT sku, name, price, type, weight, width, length, height FROM product WHERE type = $1`;
-    const result = await poolClient.query(queryString, [productType.PHYSICAL]);
+    const result = await poolClient.query(queryString, [ProductTypes.PHYSICAL]);
 
     return result.rows;
 }
@@ -163,19 +163,18 @@ export const getProductByPriceRange = async (poolClient, min, max) => {
     return result.rows;
 };
 
-export const groupByAggregationProducts = async (poolClient, aggregation, aggregateField) => {
-    const queryString = `SELECT type, $1($2) FROM product GROUP BY type`;
-    const values = [aggregation, aggregateField];
+export const groupByAggregationProducts = async (poolClient, aggregation, field) => {
+    const queryString = `SELECT type, ${aggregation}(${field}) AS aggregation FROM product GROUP BY type`;
 
-    const result = await poolClient.query(queryString, values);
+    const result = await poolClient.query(queryString);
     
     return result.rows;
 };
 
 export const getProductLocations = async (poolClient, sku) => {
-    const queryString = `SELECT * FROM inventory_contains_product WHERE sku = $1`;
+    const queryString = `SELECT inventory_id, i.sku as sku, i.quantity as quantity, p.price as price FROM inventory_contains_product i, product p WHERE i.sku = $1 AND i.sku = p.sku`;
     
-    let result = await poolClient.query(queryString, [sku]);
+    const result = await poolClient.query(queryString, [sku]);
 
     return result.rows;
 }
@@ -194,7 +193,6 @@ export const insertProductIntoInventory = async (poolClient, reqBody) => {
         await poolClient.query(queryString, values);
 
         await poolClient.query('COMMIT');
-        console.log(`insertion complete: ${values}`);
     } catch (e) {
         await poolClient.query('ROLLBACK');
         throw e;
@@ -216,18 +214,18 @@ export const updateQuantityFromInventory = async (poolClient, body) => {
 };
 
 export const getInventoryContainsProduct = async (poolClient) => {
-    let queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id) ASC`;
+    const queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id) ASC`;
 
-    let result = await poolClient.query(queryString);
+    const result = await poolClient.query(queryString);
 
     return result.rows;
 };
 // Pass only poolClient and inventoryId to get all products at a location
 export const getInventoryProducts = async (poolClient, inventoryId) => {
-    let queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1 ORDER BY (inventory_id) ASC`;
+    const queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1 ORDER BY (inventory_id) ASC`;
     const values = [parseInt(inventoryId)];
 
-    let result = await poolClient.query(queryString, values);
+    const result = await poolClient.query(queryString, values);
 
     return result.rows;
 };
@@ -361,12 +359,18 @@ export const cancelOrder = async (poolClient, orderId) => {
     }
 }
 
+export const getOrder = async (poolClient) => {
+    const queryString = "SELECT * FROM order";
+    const res = await poolClient.query(queryString);
+    return res.rows;
+}
+
 export const getOrderInfo = async (poolClient, orderId) => {
     let queryString = `SELECT * FROM orders o, order_has_product op
                         WHERE o.id = $1 AND o.id = op.order_id`;
     const values = [parseInt(orderId)];
 
-    let result = await poolClient.query(queryString, values);
+    const result = await poolClient.query(queryString, values);
 
     return result.rows;
 };
@@ -433,7 +437,184 @@ export const getReturnOrderCount = async (poolClient) => {
     return res.rows;
 }
 
-// Helpers
+// Operations on Employee Table
+
+export const createEmployee = async (poolClient, employee) => {
+    const id = await getNextId(poolClient);
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO employee (id, sin, first_name, last_name, email, phone_number, role_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [parseInt(id), employee.sin, employee.first_name, employee.last_name, employee.email,employee.phone_number, parseInt(employee.role_id)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const deleteEmployee = async (poolClient, employeeId) => {
+    const queryString = "DELETE FROM employee WHERE id = $1";
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, [parseInt(employeeId)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const updateEmployee = async (poolClient, employee) => {
+
+    const queryString = `UPDATE employee SET sin=$2, first_name=$3, last_name=$4, email=$5, phone_number=$6, role_id=$7 where id = $1`;
+    const values = [parseInt(employee.id), employee.sin, employee.first_name, employee.last_name, employee.email, employee.phone_number, parseInt(employee.role_id)];
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, values);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+// Pass only poolClient to getAll, otherwise, pass a specific id to get a specific employee
+export const getEmployee = async (poolClient, employeeID = null) => {
+    let queryString = `SELECT * FROM employee`;
+    let values = [];
+
+    if (employeeID) {
+        queryString =  `SELECT * FROM employee WHERE id = $1`;
+        values.push(parseInt(employeeID));
+    }
+
+    const result = await poolClient.query(queryString, values);
+
+    return result.rows;
+}
+
+// Operations on Role Table
+export const createRole = async (poolClient, role) => {
+    const id = await getNextId(poolClient);
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO role (id, name, permission_id)) 
+            VALUES ($1,$2,$3)`, 
+            [parseInt(id), name, parseInt(role.permission_id)]);
+        
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+};
+
+export const deleteRole = async (poolClient, roleId) => {
+    const queryString = "DELETE FROM role WHERE id = $1";
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, [parseInt(roleId)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+export const updateRole = async (poolClient, role) => {
+    const queryString = `UPDATE role SET name=$2, permission_id=$3 WHERE id = $1`;
+    const values = [parseInt(role.id), name, parseInt(role.permission_id)];
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, values);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+// Pass only poolClient to getAll, otherwise, pass a specific id to get a specific role
+export const getRole = async (poolClient, roleID = null) => {
+    let queryString = `SELECT * FROM role`;
+    let values = [];
+
+    if (roleID) {
+        queryString =  `SELECT * FROM role WHERE id = $1`;
+        values.push(parseInt(roleID));
+    }
+
+    const result = await poolClient.query(queryString, values);
+
+    return result.rows;
+}
+
+// Operations on Permission Table
+
+export const createPermission = async (poolClient, permission) => {
+    const id = await getNextId(poolClient);
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(`INSERT INTO permission (id, type)) 
+            VALUES ($1,$2)`, 
+            [parseInt(id), permission.type]);
+        
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+};
+
+export const deletePermission= async (poolClient, permissionID) => {
+    const queryString = "DELETE FROM permission WHERE id = $1";
+
+    try {
+        await poolClient.query('BEGIN');
+
+        await poolClient.query(queryString, [parseInt(permissionID)]);
+
+        await poolClient.query('COMMIT');
+    } catch (e) {
+        await poolClient.query('ROLLBACK');
+        throw e;
+    }
+}
+
+// Pass only poolClient to getAll, otherwise, pass a specific id to get a specific role
+export const getPermission = async (poolClient, permissionID = null) => {
+    let queryString = `SELECT * FROM permission`;
+    let values = [];
+
+    if (permissionID) {
+        queryString =  `SELECT * FROM permission WHERE id = $1`;
+        values.push(parseInt(permissionID));
+    }
+
+    const result = await poolClient.query(queryString, values);
+
+    return result.rows;
+}
+
+
 const getNextId = async (poolClient) => {
     const result = await poolClient.query(`SELECT NEXTVAL('seqId')`);
 

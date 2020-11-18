@@ -2,7 +2,7 @@ import React from 'react';
 import OrderTableWrapper from './tableWrappers/OrderTable';
 import Container from 'react-bootstrap/Container';
 
-const OrderView = () => {
+const EmployeeView = () => {
     return (
         <Container>
             <OrderTableWrapper />
@@ -10,4 +10,4 @@ const OrderView = () => {
     );
 };
 
-export default OrderView;
+export default EmployeeView;

@@ -62,7 +62,6 @@ app.post(Constants.apiPrefix + Constants.dummyPrefix + Constants.initPrefix, asy
 });
 
 // Endpoints for Product Entity
-
 app.post(Constants.apiPrefix + Constants.productPrefix, async (req, res) => {
     const poolClient = await pool.connect();
     try {
@@ -105,14 +104,12 @@ app.get(Constants.apiPrefix + Constants.productPrefix, async (req, res) => {
 
 app.get(Constants.apiPrefix + Constants.productPrefix + Constants.physicalPrefix, async (req, res) => {
     const poolClient = await pool.connect();
-    console.log(`enter p`);
 
     try {
         const result = await Queries.getPhysicalProducts(poolClient);
         res.status(StatusCodes.OK)
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
-        console.log(`p: ${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(`Your new product info failed to be updated. ${e}`);
     } finally {
@@ -124,15 +121,32 @@ app.get(Constants.apiPrefix + Constants.productPrefix + Constants.physicalPrefix
 
 app.get(Constants.apiPrefix + Constants.productPrefix + Constants.digitalPrefix, async (req, res) => {
     const poolClient = await pool.connect();
-    console.log(`d`);
     try {
         const result = await Queries.getDigitalProducts(poolClient);
         res.status(StatusCodes.OK)
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
-        console.log(`d: ${e}`);
+        console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.productPrefix + `/:aggregation/:field`, async (req, res) => {
+    const poolClient = await pool.connect();
+    const { aggregation, field } = req.params;
+    try {
+        const result = await Queries.groupByAggregationProducts(poolClient, aggregation, field);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`d: ${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your aggregation analysis failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -157,6 +171,7 @@ app.get(Constants.apiPrefix + Constants.productPrefix + Constants.rangePrefix + 
         }
     }
 });
+
 // Endpoints for Inventory Entity
 app.get(Constants.apiPrefix + Constants.inventoryPrefix, async (req, res) => {
     const poolClient = await pool.connect();
@@ -228,8 +243,66 @@ app.post(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async 
             await poolClient.release();
         }
     }
+});
 
-    
+// Endpoints for Order Entity
+app.get(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getOrder(poolClient);
+        console.log(JSON.stringify(result));
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderPrefix + `/:id`, async (req, res) => {
+    const poolClient = await pool.connect();
+    const { id } = req.params;
+
+    try {
+        const result = await Queries.getOrderInfo(poolClient, id);
+        console.log(JSON.stringify(result));
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+// Endpoints for Employee Entity
+app.get(Constants.apiPrefix + Constants.employeePrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getEmployee(poolClient);
+        console.log(JSON.stringify(result));
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Your new product info failed to be updated. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
 });
 
 app.listen(process.env.PORT || Constants.portServer, () => {
