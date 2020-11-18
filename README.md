@@ -5,6 +5,8 @@ An inventory manager powered with react, electron, and a postgresql database.
 
 ## Setting up your local db
 
+If you need any help installing pgdb locally, see [here](./bin/pgSetup.md).
+
 Enter pg console:
 
 ```sh
