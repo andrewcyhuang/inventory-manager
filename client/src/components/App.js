@@ -1,9 +1,9 @@
 import React from 'react';
 import '../styles/App.css';
-import OrderView from './OrderView';
-import MainView from './MainView';
+import MainPage from './pages/OrderPage';
+import OrderPage from './pages/OrderPage';
 import { Route, Switch } from 'react-router-dom';
-import NavigationBar from './NavigationBar';
+import NavigationBar from './common/NavigationBar';
 import { Container } from 'react-bootstrap';
 
 function App() {
@@ -15,8 +15,8 @@ function App() {
       <br/>
       <Container>
         <Switch>
-            <Route path='/' component={MainView} exact/>
-            <Route path='/orders' component={OrderView} exact/>
+            <Route path='/' component={MainPage} exact/>
+            <Route path='/orders' component={OrderPage} exact/>
         </Switch>
       </Container>
     </div>

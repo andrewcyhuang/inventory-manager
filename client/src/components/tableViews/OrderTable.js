@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenericTable } from '../GenericTable';
+import { GenericTable } from '../common/GenericTable';
 import AbstractQuery from '../../common/abstractQuery';
 import { Card, Form, Row, Button, Col } from 'react-bootstrap';
 import Constants from '../../common/constants';
@@ -177,7 +177,7 @@ class OrderTable extends React.Component {
                                 </Form>
                             </Col>
                             <Col>
-                                <Form onSubmit={this.handleDeleteOrder.bind(this)}>
+                                <Form onSubmit={this.updateData.bind(this)}>
                                     <Button variant='primary' type='submit'>
                                         Refresh Table
                                     </Button>

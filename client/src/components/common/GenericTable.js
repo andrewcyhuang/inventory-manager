@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Row } from 'react-bootstrap';
-import { renderTableHeaders, renderTableData } from '../common/utils';
+import { renderTableHeaders, renderTableData } from '../../common/utils';
 
 export const GenericTable = props => {
     return (

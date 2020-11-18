@@ -44,20 +44,15 @@ app.use(morgan('combined'));
 
 app.get('/', (req, res) => res.send('hello world'));
 
-app.post(Constants.apiPrefix + Constants.dummyPrefix + Constants.initPrefix, async (req, res) => {
+app.get(Constants.statusPrefix, async (req, res) => {
     const poolClient = await pool.connect();
     try {
-        await Queries.initProductDummyData(poolClient);
-        
-        res.status(StatusCodes.CREATED)
-            .send(`Init dummy data complete!`);
+        await poolClient.query(`SELECT NOW()`);
+        res.status(StatusCodes.OK)
+            .send(`Pg db connection successful!`);
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Init dummy data failed ${e}`);
-    } finally {
-        if (poolClient) {
-            poolClient.release();
-        }
+            .send(`Pg db not connected. ${e}`);
     }
 });
 
@@ -233,7 +228,7 @@ app.post(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async 
     const poolClient = await pool.connect();
     try {
         await Queries.insertProductIntoInventory(poolClient, req.body);
-        res.status(StatusCodes.OK);
+        res.status(StatusCodes.CREATED);
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -271,7 +266,7 @@ app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
     if (!order, !products) {
         try {
             await Queries.createOrderWithProducts(poolClient, order, products);
-            res.status(StatusCodes.OK);
+            res.status(StatusCodes.CREATED);
         } catch (e) {
             console.log(`${e}`);
             res.status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -366,6 +361,58 @@ app.get(Constants.apiPrefix + Constants.orderPrefix + Constants.countPrefix + `/
 
     try {
         const result = await Queries.getRestockOrderCount(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+// Endpoints for Order Has Product Entity
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getOrderHasProduct(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix + Constants.productPrefix + `/all`, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getProductInEveryOrder(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix + `/most`, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getOrderWithMostProducts(poolClient);
         res.status(StatusCodes.OK)
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {

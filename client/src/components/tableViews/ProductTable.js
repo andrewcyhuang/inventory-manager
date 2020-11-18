@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenericTable } from '../GenericTable';
+import { GenericTable } from '../common/GenericTable';
 import AbstractQuery from '../../common/abstractQuery';
 import { Card, Form, Row, Button, Col, Dropdown, DropdownButton } from 'react-bootstrap';
 import Constants from '../../common/constants';
