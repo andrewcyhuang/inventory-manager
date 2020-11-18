@@ -1,6 +1,6 @@
 import React from 'react';
 import '../styles/App.css';
-import MainPage from './pages/OrderPage';
+import MainPage from './pages/MainPage';
 import OrderPage from './pages/OrderPage';
 import { Route, Switch } from 'react-router-dom';
 import NavigationBar from './common/NavigationBar';
