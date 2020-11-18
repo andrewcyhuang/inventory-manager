@@ -194,7 +194,7 @@ class OrderTable extends React.Component {
                 <br/>
                 <Row>
                     <Col>
-                        <Button variant='primary' type='submit' onClick={e => this.handleGetOrderCounts(e, this.state.form.type)}>Click to get count of current order type.</Button>
+                        <Button variant='primary' type='submit' onClick={e => this.handleGetOrderCounts(e, this.state.form.type)}>Click to get count of the currently selected order type.</Button>
                     </Col>
                 </Row>
             <br/>
