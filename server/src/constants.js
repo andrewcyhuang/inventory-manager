@@ -12,4 +12,6 @@ export default class Constants {
     static physicalPrefix = '/physical';
     static digitalPrefix = '/digital';
     static rangePrefix = '/range';
+    static orderPrefix = '/order';
+    static employeePrefix = '/employee';
 }
