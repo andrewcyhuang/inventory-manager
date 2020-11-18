@@ -1,6 +1,6 @@
-Setting up PostgreSQL on your machine
+# Setting up PostgreSQL on your machine (Mac OSX)
 
-Open up a terminal instance and run the following commands in order
+## Open up a terminal instance and run the following commands in order
 
 1. brew install postgresql
     If you do not have homebrew installed on your mac, get it here: https://brew.sh/
