@@ -293,9 +293,11 @@ export const createOrder = async (poolClient, order) => {
     try {
         await poolClient.query('BEGIN');
 
-        await poolClient.query(`INSERT INTO orders (id, inventory_id, type, employee_id, customer_name, customer_email, customer_payment_type, customer_address, reason)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [id, order.inventory_id, order.type, order.employee_id, order.customer_name, order.customer_email, order.customer_payment_type, order.customer_address, order.reason]);
+        await poolClient.query(`INSERT INTO orders (id, inventory_id, type, employee_id, customer_name, 
+                                                    customer_email, customer_payment_type, customer_address, reason)
+                                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [id, parseInt(order.inventory_id), order.type, parseInt(order.employee_id), order.customer_name,
+                order.customer_email, order.customer_payment_type, order.customer_address, order.reason]);
 
         await poolClient.query('COMMIT');
     } catch (e) {
@@ -304,13 +306,13 @@ export const createOrder = async (poolClient, order) => {
     }
 }
 
-export const populateOrder = async (poolClient, orderId, product) => {
+export const populateOrder = async (poolClient, orderId, sku, quantity) => {
     try {
         await poolClient.query('BEGIN');
 
         await poolClient.query(`INSERT INTO order_has_product (order_id, sku, quantity)
             VALUES ($1, $2, $3)`,
-            [orderId, product.sku, product.sku]);
+            [parseInt(orderId), sku, parseInt(quantity)]);
 
         await poolClient.query('COMMIT');
     } catch (e) {
@@ -360,8 +362,8 @@ export const cancelOrder = async (poolClient, orderId) => {
 }
 
 export const getOrderInfo = async (poolClient, orderId) => {
-    let queryString = `SELECT * FROM orders o, order_has_product op, order_shipment os
-                        WHERE o.id = $1 AND o.id = op.order_id AND o.id = os.order_id`;
+    let queryString = `SELECT * FROM orders o, order_has_product op
+                        WHERE o.id = $1 AND o.id = op.order_id`;
     const values = [parseInt(orderId)];
 
     let result = await poolClient.query(queryString, values);
@@ -377,7 +379,7 @@ export const createOrderShipment = async (poolClient, orderId, shipmentCompany) 
 
         await poolClient.query(`INSERT INTO order_shipment (tracking_number, order_id, shipping_company)
             VALUES ($1, $2, $3)`,
-            [id, orderId, shipmentCompany]);
+            [id.toString(), parseInt(orderId), shipmentCompany]);
 
         await poolClient.query('COMMIT');
     } catch (e) {
@@ -392,7 +394,7 @@ export const cancelShipment = async (poolClient, trackingNumber) => {
     try {
         await poolClient.query('BEGIN');
 
-        await poolClient.query(queryString, [parseInt(trackingNumber)]);
+        await poolClient.query(queryString, [trackingNumber]);
 
         await poolClient.query('COMMIT');
     } catch (e) {
@@ -403,7 +405,7 @@ export const cancelShipment = async (poolClient, trackingNumber) => {
 
 export const getShipmentInfo = async (poolClient, trackingNumber) => {
     const queryString = "SELECT * FROM order_shipment WHERE tracking_number = $1";
-    let res = await poolClient.query(queryString, [parseInt(trackingNumber)]);
+    let res = await poolClient.query(queryString, [trackingNumber]);
     return res.rows;
 }
 
