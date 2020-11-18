@@ -15,17 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql(`CREATE TABLE IF NOT EXISTS role (
-    id integer PRIMARY KEY,
-    name varchar(50) NOT NULL,
-    permission_id integer NOT NULL,
-    FOREIGN KEY (permission_id) REFERENCES permission(id) ON DELETE CASCADE
-    );`
-  );
+  return db.runSql(`INSERT INTO role VALUES (1, 'Order Manager', 1) ON CONFLICT (id) DO NOTHING;`);
 };
 
 exports.down = function(db) {
-  return db.runSql(`DROP TABLE IF EXISTS role CASCADE;`);
+  return null;
 };
 
 exports._meta = {

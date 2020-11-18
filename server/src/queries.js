@@ -284,7 +284,7 @@ const initLocation = async (poolClient, inventory) => {
     }
 };
 
-// Operations on Orders Table
+// Operations on order Table
 export const createOrder = async (poolClient, order) => {
     const id = await getNextId(poolClient);
 
@@ -360,7 +360,7 @@ export const cancelOrder = async (poolClient, orderId) => {
 }
 
 export const getOrder = async (poolClient) => {
-    const queryString = "SELECT * FROM order";
+    const queryString = "SELECT * FROM orders";
     const res = await poolClient.query(queryString);
     return res.rows;
 }
