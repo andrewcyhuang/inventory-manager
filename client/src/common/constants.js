@@ -14,4 +14,5 @@ export default class Constants {
     static rangePrefix = '/range';
     static orderPrefix = '/order';
     static employeePrefix = '/employee';
+    static countPrefix = '/count';
 }

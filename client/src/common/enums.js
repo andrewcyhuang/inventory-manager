@@ -11,3 +11,9 @@ export const ProductTypes = {
     'PHYSICAL': 'physical',
 }
 
+export const OrderType = {
+    PURCHASE: 'purchase',
+    RESTOCK: 'restock',
+    RETURN: 'return',
+    DEFAULT: 'null'
+}

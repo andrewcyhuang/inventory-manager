@@ -1,4 +1,4 @@
-import { ProductTypes, orderType } from './enums';
+import { ProductTypes, OrderType } from './enums';
 import * as Dummy from './dummyData';
 
 // Operations on Inventory Table
@@ -284,6 +284,23 @@ const initLocation = async (poolClient, inventory) => {
     }
 };
 
+export const createOrderWithProducts = async (poolClient, order, products) => {
+    try {
+        const orderId = order.id;
+        if (orderId) {
+            await createOrder(poolClient, order);
+            let promiseArray = [];
+            for (let product in products) {
+                let productToProcess = populateOrder(orderId, product.sku, product.quantity);
+                promiseArray.push(productToProcess);
+            }
+            await (Promise.all(promiseArray).then(() => console.log(`Done populating order`)));
+        }
+    } catch (e) {
+        throw e;
+    }
+}
+
 // Operations on order Table
 export const createOrder = async (poolClient, order) => {
     const id = await getNextId(poolClient);
@@ -417,7 +434,7 @@ export const getPurchaseOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.PURCHASE]);
+    let res = await poolClient.query(queryString, [OrderType.PURCHASE]);
     return res.rows;
 }
 
@@ -425,7 +442,7 @@ export const getRestockOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.RESTOCK]);
+    let res = await poolClient.query(queryString, [OrderType.RESTOCK]);
     return res.rows;
 }
 
@@ -433,7 +450,7 @@ export const getReturnOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.RETURN]);
+    let res = await poolClient.query(queryString, [OrderType.RETURN]);
     return res.rows;
 }
 

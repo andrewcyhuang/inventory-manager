@@ -72,7 +72,7 @@ class InventoryContainsProductTable extends React.Component {
                     <Col>
                         <Form onSubmit={this.handleGetProductLocations.bind(this)}>
                             <Button variant='primary' type='submit'>
-                            Get Inventories that stock this product.
+                            Get Inventories that stock this product
                             </Button>
                             <small className="form-text text-muted">Only requires sku input.</small>
                         </Form>
@@ -80,9 +80,8 @@ class InventoryContainsProductTable extends React.Component {
                     <Col>
                         <Form onSubmit={this.updateData.bind(this)}>
                             <Button variant='primary' type='submit'>
-                                Refresh table
+                                Refresh Table
                             </Button>
-                            <small className="form-text text-muted">Requires no inputs.</small>
                         </Form>
                     </Col>
                 </Row>
