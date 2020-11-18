@@ -4,7 +4,6 @@ export default class Constants {
     static baseUrl = "http://localhost:";
     static apiPrefix = "/api";
     static initPrefix = "/init";
-    static dummyPrefix = "/dummy";
     static rolePrefix = "/role";
     static productPrefix = "/product";
     static inventoryPrefix = "/inventory";
@@ -14,4 +13,7 @@ export default class Constants {
     static rangePrefix = '/range';
     static orderPrefix = '/order';
     static employeePrefix = '/employee';
+    static countPrefix = '/count';
+    static orderHasProductPrefix = '/orderHasProduct';
+    static statusPrefix = '/status';
 }

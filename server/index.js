@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 import { StatusCodes } from 'http-status-codes';
 import Constants from './src/constants';
 import * as Queries from './src/queries';
-import { productType } from './src/enums';
+import { OrderType } from './src/enums';
 
 require('dotenv').config();
 
@@ -44,20 +44,15 @@ app.use(morgan('combined'));
 
 app.get('/', (req, res) => res.send('hello world'));
 
-app.post(Constants.apiPrefix + Constants.dummyPrefix + Constants.initPrefix, async (req, res) => {
+app.get(Constants.statusPrefix, async (req, res) => {
     const poolClient = await pool.connect();
     try {
-        await Queries.initProductDummyData(poolClient);
-        
-        res.status(StatusCodes.CREATED)
-            .send(`Init dummy data complete!`);
+        await poolClient.query(`SELECT NOW()`);
+        res.status(StatusCodes.OK)
+            .send(`Pg db connection successful!`);
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Init dummy data failed ${e}`);
-    } finally {
-        if (poolClient) {
-            poolClient.release();
-        }
+            .send(`Pg db not connected. ${e}`);
     }
 });
 
@@ -94,7 +89,7 @@ app.get(Constants.apiPrefix + Constants.productPrefix, async (req, res) => {
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -111,7 +106,7 @@ app.get(Constants.apiPrefix + Constants.productPrefix + Constants.physicalPrefix
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -128,7 +123,7 @@ app.get(Constants.apiPrefix + Constants.productPrefix + Constants.digitalPrefix,
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -164,7 +159,7 @@ app.get(Constants.apiPrefix + Constants.productPrefix + Constants.rangePrefix + 
     } catch (e) {
         console.log(`d: ${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -182,7 +177,7 @@ app.get(Constants.apiPrefix + Constants.inventoryPrefix, async (req, res) => {
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -200,7 +195,7 @@ app.get(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async (
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -221,7 +216,7 @@ app.get(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix + `/:sku
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -233,11 +228,11 @@ app.post(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async 
     const poolClient = await pool.connect();
     try {
         await Queries.insertProductIntoInventory(poolClient, req.body);
-        res.status(StatusCodes.OK);
+        res.status(StatusCodes.CREATED);
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -251,13 +246,53 @@ app.get(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
 
     try {
         const result = await Queries.getOrder(poolClient);
-        console.log(JSON.stringify(result));
         res.status(StatusCodes.OK)
             .send(JSON.parse(JSON.stringify(result)));
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+    const { order, products } = this.req.body;
+
+    if (!order, !products) {
+        try {
+            await Queries.createOrderWithProducts(poolClient, order, products);
+            res.status(StatusCodes.CREATED);
+        } catch (e) {
+            console.log(`${e}`);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+                .send(`Request failed. ${e}`);
+        } finally {
+            if (poolClient) {
+                await poolClient.release();
+            }
+        }
+    } else {
+        res.status(StatusCodes.BAD_REQUEST)
+            .send(`Invalid request body.`);
+    };
+});
+
+app.delete(Constants.apiPrefix + Constants.orderPrefix + `/:id`, async (req, res) => {
+    const poolClient = await pool.connect();
+    const { id } = this.req.params;
+
+    try {
+        await Queries.cancelOrder(poolClient, id);
+        res.status(StatusCodes.OK);
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -277,7 +312,113 @@ app.get(Constants.apiPrefix + Constants.orderPrefix + `/:id`, async (req, res) =
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderPrefix + Constants.countPrefix + `/${OrderType.PURCHASE}`, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getPurchaseOrderCount(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderPrefix + Constants.countPrefix + `/${OrderType.RETURN}`, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getReturnOrderCount(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderPrefix + Constants.countPrefix + `/${OrderType.RESTOCK}`, async (req, res) => {
+    const poolClient = await pool.connect();
+
+    try {
+        const result = await Queries.getRestockOrderCount(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+// Endpoints for Order Has Product Entity
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getOrderHasProduct(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix + Constants.productPrefix + `/all`, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getProductInEveryOrder(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
+    } finally {
+        if (poolClient) {
+            await poolClient.release();
+        }
+    }
+});
+
+app.get(Constants.apiPrefix + Constants.orderHasProductPrefix + `/most`, async (req, res) => {
+    const poolClient = await pool.connect();
+    try {
+        const result = await Queries.getOrderWithMostProducts(poolClient);
+        res.status(StatusCodes.OK)
+            .send(JSON.parse(JSON.stringify(result)));
+    } catch (e) {
+        console.log(`${e}`);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();
@@ -297,7 +438,7 @@ app.get(Constants.apiPrefix + Constants.employeePrefix, async (req, res) => {
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(`Your new product info failed to be updated. ${e}`);
+            .send(`Request failed. ${e}`);
     } finally {
         if (poolClient) {
             await poolClient.release();

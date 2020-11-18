@@ -1,18 +1,19 @@
 import React from 'react';
-import { GenericTable } from '../GenericTable';
+import { GenericTable } from '../common/GenericTable';
 import AbstractQuery from '../../common/abstractQuery';
-import { Form, Row, Button, Col } from 'react-bootstrap';
+import { Card, Form, Row, Button, Col } from 'react-bootstrap';
 import Constants from '../../common/constants';
+import { priceProcessing } from '../../common/utils';
 
-class OrderTable extends React.Component {
+class InventoryContainsProductTable extends React.Component {
     constructor (props) {
         super(props);
-        this.state = { data: [], form:{ id: 0 } };
+        this.state = { data: [], form:{ id: 0, sku: '', quantity: 0} };
         this.queryHelper = null;
     }
 
     async componentDidMount() {
-        this.queryHelper = new AbstractQuery(Constants.orderPrefix);
+        this.queryHelper = new AbstractQuery(Constants.inventoryContainsProductsPrefix);
         await this.updateData();
     }
 
@@ -21,10 +22,12 @@ class OrderTable extends React.Component {
             <div>
                 <Row>
                 <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
-                    <h2>Order Table </h2>
+                    <h2>Inventory Contains Product Table </h2>
                 </div>
                 </Row>
-                {/* <Row>
+                <Card>
+                <div style={{ paddingLeft: '10px', paddingRight: '10px'}}>
+                <Row>
                     <Col>
                         <Form.Group controlId='id'>
                             <small className="form-text text-muted">Enter a valid numeric inventory id.</small>
@@ -48,7 +51,7 @@ class OrderTable extends React.Component {
                     </Col>
                     <Col>
                         <Form.Group controlId='quantity'>
-                            <small className="form-text text-muted">Enter a valid product sku.</small>
+                            <small className="form-text text-muted">Enter a valid quantity.</small>
                             <Form.Control
                                     name='quantity'
                                     value={this.state.form.quantity}
@@ -67,9 +70,9 @@ class OrderTable extends React.Component {
                         </Form>
                     </Col>
                     <Col>
-                        <Form onSubmit={this.handleGetOrderInfo.bind(this)}>
+                        <Form onSubmit={this.handleGetProductLocations.bind(this)}>
                             <Button variant='primary' type='submit'>
-                            Get Inventories that stock this product.
+                            Get Inventories that stock this product
                             </Button>
                             <small className="form-text text-muted">Only requires sku input.</small>
                         </Form>
@@ -77,12 +80,13 @@ class OrderTable extends React.Component {
                     <Col>
                         <Form onSubmit={this.updateData.bind(this)}>
                             <Button variant='primary' type='submit'>
-                                Refresh table
+                                Refresh Table
                             </Button>
-                            <small className="form-text text-muted">Requires no inputs.</small>
                         </Form>
                     </Col>
-                </Row> */}
+                </Row>
+                </div>
+            </Card>
             <br/>
             <GenericTable data={this.state.data}/>
             </div>
@@ -123,14 +127,15 @@ class OrderTable extends React.Component {
         }
     }
 
-    async handleGetOrderInfo(event) {
+    async handleGetProductLocations(event) {
         event.preventDefault();
-        const { id } = this.state.form;
-        if (id) {
+        const { sku } = this.state.form;
+        if (sku) {
             try {
-                const res = await this.queryHelper.getById(id);
+                const res = await this.queryHelper.getById(sku);
+                const sanitized = priceProcessing(res.data);
                 if (res && res.data) {
-                    this.setState({data: res.data});
+                    this.setState({data: sanitized});
                 }
             } catch (e) {
                 console.log(`Error occurred submitting form. ${e}`);
@@ -146,4 +151,4 @@ class OrderTable extends React.Component {
     };
 }
 
-export default OrderTable;
+export default InventoryContainsProductTable;

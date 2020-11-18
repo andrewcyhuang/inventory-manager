@@ -62,3 +62,17 @@ export const sanitizePrice = (value, aggregation = null) => {
         return (value / 100).toFixed(2);
     }
 }
+
+export const constructArrayCommaSeparated = (string) => {
+    if (string) {
+        let res = string.split(',');
+        res.forEach(s => s.trim());
+        if (res.length > 0) {
+            return res;
+        } else {
+            throw new Error(`Empty array. Input string: ${string}`);
+        }
+    } else {
+        throw new Error(`Invalid input string. ${string}`);
+    }
+}

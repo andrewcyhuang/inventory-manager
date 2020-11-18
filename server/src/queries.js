@@ -1,5 +1,4 @@
-import { ProductTypes, orderType } from './enums';
-import * as Dummy from './dummyData';
+import { ProductTypes, OrderType } from './enums';
 
 // Operations on Inventory Table
 export const createInventory = async (poolClient, inventory) => {
@@ -220,6 +219,7 @@ export const getInventoryContainsProduct = async (poolClient) => {
 
     return result.rows;
 };
+
 // Pass only poolClient and inventoryId to get all products at a location
 export const getInventoryProducts = async (poolClient, inventoryId) => {
     const queryString = `SELECT * FROM inventory_contains_product WHERE inventory_id = $1 ORDER BY (inventory_id) ASC`;
@@ -229,43 +229,6 @@ export const getInventoryProducts = async (poolClient, inventoryId) => {
 
     return result.rows;
 };
-
-export const initProductDummyData = async (poolClient) => {
-    try {
-        const productSkus = [];
-        let len = Dummy.dummyProductData.length;
-        for (let i = 0; i < len; i++) {
-            const jsonProduct = JSON.parse(JSON.stringify(Dummy.dummyProductData[i]));
-            productSkus.push(jsonProduct.sku);
-            await createProduct(poolClient, jsonProduct);
-        };
-
-        let inventories = await getInventory(poolClient);
-        console.log(`got inventory`);
-
-        if (!inventories || !inventories[0]) {
-            len = Dummy.dummyInventoryData.length;
-            for (let i = 0; i < len; i++) {
-                const jsonInventory = JSON.parse(JSON.stringify(Dummy.dummyInventoryData[i]));
-                await createInventory(poolClient, jsonInventory);
-            };
-            inventories = await getInventory(poolClient);
-        }
-
-        if (inventories && inventories[0]) {
-            for (let i = 0; i < inventories.length; i++) {
-                const jsonInventory = JSON.parse(JSON.stringify(inventories[i]));
-
-                for (let j = 0; j < productSkus.length; j++) {
-                    const q = Math.floor(Math.random() * 101);
-                    await insertProductIntoInventory(poolClient, jsonInventory.id, productSkus[j], q);
-                }
-            };
-        }
-    } catch (e) {
-        throw new Error(`Init product dummy data failed. ${e}`);
-    }
-}
 
 const initLocation = async (poolClient, inventory) => {
     try {
@@ -283,6 +246,24 @@ const initLocation = async (poolClient, inventory) => {
         throw e;
     }
 };
+
+export const createOrderWithProducts = async (poolClient, order, products) => {
+    try {
+        const orderId = order.id;
+        const quantity = order.types === OrderType.PURCHASE ? -1 : 1;
+        if (orderId) {
+            await createOrder(poolClient, order);
+            let promiseArray = [];
+            for (let product in products) {
+                let productToProcess = populateOrder(orderId, product.sku, quantity);
+                promiseArray.push(productToProcess);
+            }
+            await (Promise.all(promiseArray).then(() => console.log(`Done populating order`)));
+        }
+    } catch (e) {
+        throw e;
+    }
+}
 
 // Operations on order Table
 export const createOrder = async (poolClient, order) => {
@@ -365,6 +346,47 @@ export const getOrder = async (poolClient) => {
     return res.rows;
 }
 
+export const getOrderHasProduct = async (poolClient) => {
+    const queryString = "SELECT * FROM order_has_product";
+    const res = await poolClient.query(queryString);
+    return res.rows;
+}
+
+export const getProductInEveryOrder = async (poolClient) => {
+    const queryString = `
+        SELECT *
+        FROM product P
+        WHERE NOT EXISTS (
+            (
+                SELECT id
+                FROM orders
+        
+            )
+            EXCEPT
+            (
+                SELECT OHP.order_id
+                FROM order_has_product OHP
+                WHERE OHP.sku = P.sku
+            )
+        );`;
+    const res = await poolClient.query(queryString);
+    return res.rows;
+};
+
+export const getOrderWithMostProducts = async (poolClient) => {
+    const queryString = `
+        SELECT order_id, COUNT(*) AS numberOfProducts
+        FROM order_has_product
+        GROUP BY order_id
+        HAVING COUNT(*) >= ALL (
+            SELECT COUNT(*)
+            FROM order_has_product ohp
+            GROUP BY ohp.order_id
+        );`;
+    const res = await poolClient.query(queryString);
+    return res.rows;
+};
+
 export const getOrderInfo = async (poolClient, orderId) => {
     let queryString = `SELECT * FROM orders o, order_has_product op
                         WHERE o.id = $1 AND o.id = op.order_id`;
@@ -417,7 +439,7 @@ export const getPurchaseOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.PURCHASE]);
+    let res = await poolClient.query(queryString, [OrderType.PURCHASE]);
     return res.rows;
 }
 
@@ -425,7 +447,7 @@ export const getRestockOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.RESTOCK]);
+    let res = await poolClient.query(queryString, [OrderType.RESTOCK]);
     return res.rows;
 }
 
@@ -433,7 +455,7 @@ export const getReturnOrderCount = async (poolClient) => {
     let queryString = `SELECT count(*) FROM orders
                         GROUP BY type
                         HAVING type = $1`;
-    let res = await poolClient.query(queryString, [orderType.RETURN]);
+    let res = await poolClient.query(queryString, [OrderType.RETURN]);
     return res.rows;
 }
 
