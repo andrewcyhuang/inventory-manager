@@ -15,7 +15,15 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql(`INSERT INTO role VALUES (1, 'Order Manager', 1) ON CONFLICT (id) DO NOTHING;`);
+  return db.runSql(`
+  INSERT INTO role VALUES (1, 'Order Manager', 1) ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('301', 'Purchase_order_assistant', '3321') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('321', 'Return_order_assistant', '4421') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('303', 'Restock_order_assistant','5521') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('456', 'Manager', '1') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('456', 'Manager', '2134') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('456', 'Manager', '7654') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO role VALUES ('456', 'Manager', '5453') ON CONFLICT (id) DO NOTHING;`);
 };
 
 exports.down = function(db) {
