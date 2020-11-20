@@ -249,17 +249,10 @@ const initLocation = async (poolClient, inventory) => {
 
 export const createOrderWithProducts = async (poolClient, order, products) => {
     try {
-        const orderId = order.id;
-        const quantity = order.types === OrderType.PURCHASE ? -1 : 1;
-        if (orderId) {
-            await createOrder(poolClient, order);
-            let promiseArray = [];
-            for (let product in products) {
-                let productToProcess = populateOrder(orderId, product.sku, quantity);
-                promiseArray.push(productToProcess);
-            }
-            await (Promise.all(promiseArray).then(() => console.log(`Done populating order`)));
-        }
+        const orderId = await createOrder(poolClient, order);
+        await Promise.all(products.map(async p => {
+            await populateOrder(poolClient, orderId, p, 1);
+        }));
     } catch (e) {
         throw e;
     }
@@ -268,6 +261,7 @@ export const createOrderWithProducts = async (poolClient, order, products) => {
 // Operations on order Table
 export const createOrder = async (poolClient, order) => {
     const id = await getNextId(poolClient);
+    console.log(`entered CreateOrder: ${id}`);
 
     try {
         await poolClient.query('BEGIN');
@@ -279,6 +273,7 @@ export const createOrder = async (poolClient, order) => {
                 order.customer_email, order.customer_payment_type, order.customer_address, order.reason]);
 
         await poolClient.query('COMMIT');
+        return id;
     } catch (e) {
         await poolClient.query('ROLLBACK');
         throw e;
@@ -286,6 +281,7 @@ export const createOrder = async (poolClient, order) => {
 }
 
 export const populateOrder = async (poolClient, orderId, sku, quantity) => {
+    console.log(`populateOrder ${sku}`);
     try {
         await poolClient.query('BEGIN');
 

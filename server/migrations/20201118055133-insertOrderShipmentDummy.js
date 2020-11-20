@@ -16,10 +16,10 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.runSql(`
-  INSERT INTO order_shipment VALUES ('23454567', 14, 'Fedex') ON CONFLICT (tracking_number) DO NOTHING;
-INSERT INTO order_shipment VALUES ('34564567', 4, 'UPS') ON CONFLICT (tracking_number) DO NOTHING;
-INSERT INTO order_shipment VALUES ('23453456', 3, 'DHL') ON CONFLICT (tracking_number) DO NOTHING;
-INSERT INTO order_shipment VALUES ('87657654', 8, 'DHL') ON CONFLICT (tracking_number) DO NOTHING;`);
+  INSERT INTO order_shipment VALUES ('1', 14, 'Fedex') ON CONFLICT (tracking_number) DO NOTHING;
+  INSERT INTO order_shipment VALUES ('2', 4, 'UPS') ON CONFLICT (tracking_number) DO NOTHING;
+  INSERT INTO order_shipment VALUES ('3', 3, 'DHL') ON CONFLICT (tracking_number) DO NOTHING;
+  INSERT INTO order_shipment VALUES ('4', 8, 'DHL') ON CONFLICT (tracking_number) DO NOTHING;`);
 };
 
 exports.down = function(db) {

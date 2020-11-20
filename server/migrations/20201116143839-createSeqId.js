@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql(`CREATE SEQUENCE seqId START 1;`);
+  return db.runSql(`CREATE SEQUENCE seqId START 20;`);
 };
 
 exports.down = function(db) {

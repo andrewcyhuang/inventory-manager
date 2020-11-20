@@ -66,7 +66,9 @@ export const sanitizePrice = (value, aggregation = null) => {
 export const constructArrayCommaSeparated = (string) => {
     if (string) {
         let res = string.split(',');
-        res.forEach(s => s.trim());
+        res.forEach((string, idx) => {
+            res[idx] = string.trim();
+        });
         if (res.length > 0) {
             return res;
         } else {
