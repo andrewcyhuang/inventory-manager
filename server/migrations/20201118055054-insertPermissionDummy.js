@@ -15,7 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql(`INSERT INTO permission VALUES (1, 'SUBMIT_ANY_ORDER') ON CONFLICT (id) DO NOTHING;`);
+  return db.runSql(`
+  INSERT INTO permission VALUES (1, 'SUBMIT_ANY_ORDER') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('3321', 'SUBMIT_PURCHASE_ORDER') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('4421', 'SUBMIT_RETURN_ORDER') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('5521', 'SUBMIT_RESTOCK_ORDER') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('5453', 'VIEW_ANY_ORDER') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('2134', 'VIEW_INVENTORYS') ON CONFLICT (id) DO NOTHING;
+  INSERT INTO permission VALUES ('7654', 'VIEW_PRODUCT_LIST') ON CONFLICT (id) DO NOTHING;`);
 };
 
 exports.down = function(db) {
