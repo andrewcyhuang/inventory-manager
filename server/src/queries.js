@@ -213,7 +213,7 @@ export const updateQuantityFromInventory = async (poolClient, body) => {
 };
 
 export const getInventoryContainsProduct = async (poolClient) => {
-    const queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id) ASC`;
+    const queryString = `SELECT * FROM inventory_contains_product ORDER BY (inventory_id, sku) ASC`;
 
     const result = await poolClient.query(queryString);
 
