@@ -142,8 +142,8 @@ class OrderTable extends React.Component {
                                 <Form.Group controlId='products'>
                                     <small className="form-text text-muted">Enter a list of product skus separated by a comma.</small>
                                     <Form.Control
-                                            name='payment'
-                                            value={this.state.form.payment}
+                                            name='products'
+                                            value={this.state.form.products}
                                             placeholder='Enter a comma separated list of product skus (e.g.: 1a2b3c3d5e, 7a2b8c3d9e, ...)'
                                             onChange={this.handleInputChange.bind(this)}/>
                                     </Form.Group>
