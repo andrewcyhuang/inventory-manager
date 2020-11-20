@@ -228,9 +228,9 @@ app.post(Constants.apiPrefix + Constants.inventoryContainsProductsPrefix, async 
     const poolClient = await pool.connect();
     try {
         await Queries.insertProductIntoInventory(poolClient, req.body);
-        res.status(StatusCodes.CREATED);
+        res.status(StatusCodes.CREATED)
+            .send(`Inventory insertion complete`);
     } catch (e) {
-        console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(`Request failed. ${e}`);
     } finally {
@@ -261,12 +261,17 @@ app.get(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
 
 app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
     const poolClient = await pool.connect();
-    const { order, products } = this.req.body;
+    const { order, products } = req.body;
+    console.log(JSON.stringify(req.body));
 
-    if (!order, !products) {
+    if (order && products) {
         try {
+            console.log(JSON.stringify(order));
+            console.log(JSON.stringify(products));
             await Queries.createOrderWithProducts(poolClient, order, products);
-            res.status(StatusCodes.CREATED);
+            console.log(`done`);
+            res.status(StatusCodes.CREATED)
+                .send(`Order creation complete`);
         } catch (e) {
             console.log(`${e}`);
             res.status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -284,11 +289,12 @@ app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
 
 app.delete(Constants.apiPrefix + Constants.orderPrefix + `/:id`, async (req, res) => {
     const poolClient = await pool.connect();
-    const { id } = this.req.params;
+    const { id } = req.params;
 
     try {
         await Queries.cancelOrder(poolClient, id);
-        res.status(StatusCodes.OK);
+        res.status(StatusCodes.OK)
+            .send(`Order deletion complete`);
     } catch (e) {
         console.log(`${e}`);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR)

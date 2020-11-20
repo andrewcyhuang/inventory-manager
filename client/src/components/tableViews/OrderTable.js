@@ -223,6 +223,7 @@ class OrderTable extends React.Component {
     async handleSubmitOrder(event) {
         event.preventDefault();
         let { products, ...order } = this.state.form;
+        if (order.type === OrderType.DEFAULT) order.type = OrderType.RESTOCK;
         try {
             products = constructArrayCommaSeparated(products);
             const body = {
