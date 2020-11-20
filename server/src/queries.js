@@ -135,7 +135,7 @@ export const updateProduct = async (poolClient, product) => {
 };
 
 export const getProducts = async (poolClient) => {
-    const queryString = `SELECT * FROM product`;
+    const queryString = `SELECT * FROM product ORDER BY (type, sku) ASC`;
     const result = await poolClient.query(queryString);
 
     return result.rows;
