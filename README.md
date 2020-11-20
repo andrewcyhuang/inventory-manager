@@ -1,4 +1,4 @@
-An inventory manager powered with react, electron, and a postgresql database.
+An inventory manager powered with react, and a postgresql database.
 
 # Getting Started
 
