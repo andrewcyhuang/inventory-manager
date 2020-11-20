@@ -261,7 +261,7 @@ app.get(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
 
 app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
     const poolClient = await pool.connect();
-    const { order, products } = this.req.body;
+    const { order, products } = req.body;
 
     if (!order, !products) {
         try {
@@ -284,7 +284,7 @@ app.post(Constants.apiPrefix + Constants.orderPrefix, async (req, res) => {
 
 app.delete(Constants.apiPrefix + Constants.orderPrefix + `/:id`, async (req, res) => {
     const poolClient = await pool.connect();
-    const { id } = this.req.params;
+    const { id } = req.params;
 
     try {
         await Queries.cancelOrder(poolClient, id);
